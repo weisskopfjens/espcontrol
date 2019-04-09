@@ -1,0 +1,239 @@
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="w3.css">
+	<style>
+    .slidecontainer {
+        width: 100%;
+    }
+
+    .slider {
+        -webkit-appearance: none;
+        width: 100%;
+        height: 30px;
+        background: #d3d3d3;
+        outline: none;
+        opacity: 0.7;
+        -webkit-transition: .2s;
+        transition: opacity .2s;
+    }
+
+    .slider:hover {
+        opacity: 1;
+    }
+
+    .slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 50px;
+        height: 30px;
+        background: #4CAF50;
+        cursor: pointer;
+    }
+
+    .slider::-moz-range-thumb {
+        width: 50px;
+        height: 30px;
+        background: #4CAF50;
+        cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+	<div class="w3-container">
+		<h2>LED</h2>
+		<script src="iro.min.js" charset="utf-8"></script>
+		<div class="w3-card w3-light-grey w3-margin" id="colorpicker">
+		</div>
+		<div class="w3-card w3-light-grey w3-margin">
+		<input class="w3-button w3-mobile" id="ledonid" type="button" onclick="callurl('/control?cmd=LEDon()',true);" value="Ein" />
+		<input class="w3-button w3-mobile" id="ledoffid" type="button" onclick="callurl('/control?cmd=LEDoff()',true);" value="Aus" />
+		<input class="w3-button w3-blue w3-mobile" id="animationmode0" type="button" onclick="callurl('/control?cmd=setLEDMode(0)');" value="Normal" />
+		<input class="w3-button w3-blue w3-mobile" id="animationmode1" type="button" onclick="callurl('/control?cmd=setLEDMode(1)');" value="Flash" />
+		<input class="w3-button w3-blue w3-mobile" id="animationmode2" type="button" onclick="callurl('/control?cmd=setLEDMode(2)');" value="Strobe" />
+		<input class="w3-button w3-blue w3-mobile" id="animationmode3" type="button" onclick="callurl('/control?cmd=setLEDMode(3)');" value="Fade" />
+		<input class="w3-button w3-blue w3-mobile" id="animationmode4" type="button" onclick="callurl('/control?cmd=setLEDMode(4)');" value="Smooth" />
+		<input class="w3-button w3-blue w3-mobile" id="animationmode5" type="button" onclick="callurl('/control?cmd=setLEDMode(5)');" value="Party" />
+		<input class="w3-button w3-blue w3-mobile" id="animationmode6" type="button" onclick="callurl('/control?cmd=setLEDMode(6)');" value="Fadeout" />
+		</div>
+		<div class="w3-card w3-light-grey w3-margin">
+		<input class="w3-button w3-mobile" id="automodeid0" type="button" onclick="callurl('/control?cmd=automode=0');" value="Normal" />
+		<input class="w3-button w3-mobile" id="automodeid1" type="button" onclick="callurl('/control?cmd=automode=1');" value="Auto Modus" />
+		<input class="w3-button w3-mobile" id="automodeid2" type="button" onclick="callurl('/control?cmd=automode=2');" value="Alarm Modus" />
+		</div>
+		<div class="w3-card w3-green w3-round w3-margin" id="status">
+		</div>
+		<div class="w3-card w3-light-grey w3-margin">
+		<h3>Speed</h3>
+		<input id="slider" type="range" min="1" max="255" step="1" class="slider" oninput="callurl('/control?cmd=setAnimationSpeed('+this.value+')');" />
+		</div>
+		<div class="w3-card w3-light-grey w3-round w3-margin" id="presets">
+			<input class="w3-button w3-mobile" type="button" onclick="togglesavemode()" value="Speichern aus" id="savemode" />
+			<input class="w3-button w3-mobile" type="button" onclick="presetselect('1')" value="Preset1" id="Preset1" />
+			<input class="w3-button w3-mobile" type="button" onclick="presetselect('2')" value="Preset2" id="Preset2" />
+			<input class="w3-button w3-mobile" type="button" onclick="presetselect('3')" value="Preset3" id="Preset3" />
+			<input class="w3-button w3-mobile" type="button" onclick="presetselect('4')" value="Preset4" id="Preset4" />
+			<input class="w3-button w3-mobile" type="button" onclick="presetselect('5')" value="Preset5" id="Preset5" />
+			<input class="w3-button w3-mobile" type="button" onclick="presetselect('6')" value="Preset6" id="Preset6" />
+			<input class="w3-button w3-mobile" type="button" onclick="presetselect('7')" value="Preset7" id="Preset7" />
+			<input class="w3-button w3-mobile" type="button" onclick="presetselect('8')" value="Preset8" id="Preset8" />
+		</div>
+		<div class="w3-card w3-green w3-round w3-margin" id="nodes">
+		</div>
+	</div>
+<div>
+  <script>
+    var initial=0;
+    var requestUrl = new XMLHttpRequest(); //call urls
+    var requestJson = new XMLHttpRequest(); //update colorpicker
+		var requestVars = new XMLHttpRequest();
+    var ColorPicker = new iro.ColorPicker("#colorpicker", {
+      width: 320,
+      height: 320,
+      color: "#fff",
+      markerRadius: 8,
+      padding: 4,
+      sliderMargin: 24,
+      borderWidth: 2,
+      borderColor: "#000",
+    });
+
+    ColorPicker.on("color:change", function(color, changes) {
+      if ( initial==1 ) {
+        // Log the color's hex RGB value to the dev console
+        console.log(color.hsv);
+	  		callurl("/control?cmd=setLEDColor("+parseInt(color.hsv.h*(255/360))+","+parseInt(color.hsv.s*(255/100))+","+parseInt(color.hsv.v*(255/100))+")");
+        console.log(ColorPicker.color.hsv);
+      }
+    });
+
+    function callurl(url,update=false) {
+      if(update) {
+        initial=0;
+      }
+      requestUrl.open("GET",url, true);
+      requestUrl.send();
+    }
+
+		window.onload = function () {
+			loadpresets();
+			initial=0;
+			savemode=false;
+			requestJson.open("GET","/json?leds", true);
+      requestJson.send();
+			requestVars.open("GET","/json?vars", true);
+			requestVars.send();
+			var timeout = window.setTimeout('requestJson.open("GET","/json?nodes",true);requestJson.send();', 500);
+		}
+
+    function togglesavemode() {
+			savemode = !savemode;
+			if(savemode) {
+				document.getElementById("savemode").value="Speichern an";
+			} else {
+				document.getElementById("savemode").value="Speichern aus";
+			}
+		}
+
+		function presetselect(presetnr) {
+			var json;
+			if (savemode) {
+				json 	 = '{';
+				json    += '"r" : "'+ColorPicker.color.rgb.r+'",';
+				json    += '"g" : "'+ColorPicker.color.rgb.g+'",';
+				json    += '"b" : "'+ColorPicker.color.rgb.b+'"';
+				json    += '}';
+				localStorage.setItem("Preset"+presetnr,json);
+				document.getElementById("Preset"+presetnr).style.backgroundColor = "rgb("+ColorPicker.color.rgb.r+","+ColorPicker.color.rgb.g+","+ColorPicker.color.rgb.b+")";
+			} else {
+				json=localStorage.getItem("Preset"+presetnr);
+				var rgb = JSON.parse(json);
+				ColorPicker.color.rgb = rgb;
+				console.log(rgb);
+			}
+		}
+
+		function loadpresets() {
+			var i=1;
+			while( true ) {
+				json=localStorage.getItem("Preset"+i);
+				if(json == null) {
+					break;
+				}
+				var rgb = JSON.parse(json);
+				document.getElementById("Preset"+i).style.backgroundColor = "rgb("+rgb.r+","+rgb.g+","+rgb.b+")";
+				i++;
+			}
+		}
+
+		requestUrl.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200 ) {
+				var timeout = window.setTimeout('requestJson.open("GET","/json?leds", true);requestJson.send();', 500);
+				requestVars.open("GET","/json?vars", true);
+				requestVars.send();
+			}
+		}
+
+		function jsonCallback() {
+			if (this.readyState == 4 && this.status == 200 ) {
+				var myObj = JSON.parse(this.responseText);
+				if (myObj.hasOwnProperty("leds")) {
+					var status="";
+					var element1 = document.getElementById("ledonid");
+					element1.classList.remove("w3-red");
+					var element2 = document.getElementById("ledoffid");
+					element2.classList.remove("w3-red");
+					if(myObj.leds.status == 0) {
+						status = "Licht ist AUS";
+						element2.classList.add("w3-red");
+					} else if(myObj.leds.status == 1) {
+						status = "Licht ist EIN";
+						element1.classList.add("w3-red");
+					}
+					if (initial==0) {
+						var hsv = ColorPicker.color.hsv;
+						hsv.h=parseInt(myObj.leds.h*(360/255));
+						hsv.s=parseInt(myObj.leds.s*(100/255));
+						hsv.v=parseInt(myObj.leds.v*(100/255));
+						ColorPicker.color.hsv=hsv;
+						initial=1;
+					}
+					document.getElementById("slider").value = myObj.leds.animationspeed;
+					for(var i=0;i<7;i++) {
+						if(myObj.leds.animation==i) {
+							document.getElementById("animationmode"+i).classList.add("w3-red");
+						} else {
+							document.getElementById("animationmode"+i).classList.remove("w3-red");
+						}
+
+					}
+					document.getElementById("status").innerHTML = status;
+				} else if (myObj.hasOwnProperty("nodes")) {
+					var nodes="";
+					for(var i=0;i<16;i++) {
+						if (typeof myObj.nodes[i] !== 'undefined') {
+							nodes += '<a href="http://'+myObj.nodes[i].ip+'" target="_blank">'+myObj.nodes[i].name+" ("+myObj.nodes[i].ip+")"+'</a></br>';
+						}
+					}
+					document.getElementById("nodes").innerHTML = nodes;
+				} else if (myObj.hasOwnProperty("vars")) {
+					var element1 = document.getElementById("automodeid0");
+					element1.classList.remove("w3-red");
+					var element2 = document.getElementById("automodeid1");
+					element2.classList.remove("w3-red");
+					var element3 = document.getElementById("automodeid2");
+					element3.classList.remove("w3-red");
+					if(myObj.vars.automode == 0) {
+	  				element1.classList.add("w3-red");
+					} else if(myObj.vars.automode == 1) {
+	  				element2.classList.add("w3-red");
+					} else if(myObj.vars.automode == 2) {
+	  				element3.classList.add("w3-red");
+					}
+				}
+			}
+		}
+		requestJson.onreadystatechange = jsonCallback;
+		requestVars.onreadystatechange = jsonCallback;
+	</script>

@@ -1,0 +1,74 @@
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="w3.css">
+	<style>
+
+  </style>
+</head>
+
+<body>
+	<div class="w3-container">
+		<div class="w3-card w3-round w3-margin">
+			<h2>Pumpensumpf</h2>
+			<input class="w3-button w3-mobile" id="alarm1" type="button" onclick="callurl('/control?cmd=resetalarm()',true);" value="Wasserstand zu hoch" />
+			<input class="w3-button w3-mobile" id="alarm2" type="button" onclick="callurl('/control?cmd=resetalarm()',true);" value="Wasserstand kritisch!" />
+		</div>
+	</div>
+	<div class="w3-card w3-green w3-round w3-margin" id="nodes">
+	</div>
+  <script>
+    var initial=0;
+    var requestUrl = new XMLHttpRequest(); //call urls
+    var requestJson = new XMLHttpRequest(); //update colorpicker
+		var requestVars = new XMLHttpRequest();
+
+    function callurl(url,update=false) {
+      if(update) {
+        initial=0;
+      }
+      requestUrl.open("GET",url, true);
+      requestUrl.send();
+    }
+
+		window.onload = function () {
+			requestJson.open("GET","/json?vars", true);
+      requestJson.send();
+
+			var timeout = window.setTimeout('requestJson.open("GET","/json?nodes",true);requestJson.send();', 500);
+		}
+		function jsonCallback() {
+			if (this.readyState == 4 && this.status == 200 ) {
+				var myObj = JSON.parse(this.responseText);
+				if (myObj.hasOwnProperty("vars")) {
+					var element1 = document.getElementById("alarm1");
+					element1.classList.remove("w3-red");
+					element1.classList.remove("w3-green");
+					var element2 = document.getElementById("alarm2");
+					element2.classList.remove("w3-red");
+					element2.classList.remove("w3-green");
+					if(myObj.vars.alarm1 != 0) {
+						element1.classList.add("w3-red");
+					} else {
+						element1.classList.add("w3-green");
+						element1.value = "Wasserstand OK"
+					}
+					if(myObj.vars.alarm2 != 0) {
+						element2.classList.add("w3-red");
+					} else {
+						element2.classList.add("w3-green");
+						element2.value = "Wasserstand OK"
+					}
+				} else if (myObj.hasOwnProperty("nodes")) {
+					var nodes="";
+					for(var i=0;i<16;i++) {
+						if (typeof myObj.nodes[i] !== 'undefined') {
+							nodes += '<a href="http://'+myObj.nodes[i].ip+'" target="_blank">'+myObj.nodes[i].name+" ("+myObj.nodes[i].ip+")"+'</a></br>';
+						}
+					}
+					document.getElementById("nodes").innerHTML = nodes;
+				}
+			}
+		}
+		requestJson.onreadystatechange = jsonCallback;
+	</script>

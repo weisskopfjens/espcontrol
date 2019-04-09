@@ -1,0 +1,46 @@
+{
+    "description": "Get time of sunrise and sunset.", 
+    "repository": {
+        "url": "https://github.com/dmkishi/Dusk2Dawn", 
+        "type": "git"
+    }, 
+    "platforms": [
+        "atmelavr", 
+        "atmelsam", 
+        "espressif8266", 
+        "intel_arc32", 
+        "microchippic32", 
+        "nordicnrf51", 
+        "teensy", 
+        "timsp430"
+    ], 
+    "export": {
+        "exclude": [
+            "extras", 
+            "docs", 
+            "tests", 
+            "test", 
+            "*.doxyfile", 
+            "*.pdf"
+        ], 
+        "include": null
+    }, 
+    "authors": [
+        {
+            "maintainer": true, 
+            "name": "DM Kishi", 
+            "url": null, 
+            "email": "dm.kishi@gmail.com"
+        }
+    ], 
+    "keywords": [
+        "other"
+    ], 
+    "id": 1483, 
+    "name": "Dusk2Dawn", 
+    "frameworks": [
+        "arduino"
+    ], 
+    "version": "1.0.1", 
+    "homepage": null
+}
